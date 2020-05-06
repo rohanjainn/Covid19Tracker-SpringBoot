@@ -20,9 +20,16 @@ import okhttp3.Response;
 @Service
 public class CoronaVirusDataService {
 
-	private static String VIRUS_DATA_URL="https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/02-27-2020.csv";
+	private static String VIRUS_DATA_URL="https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/05-02-2020.csv";
 	
-	 private final OkHttpClient httpClient = new OkHttpClient();
+	
+	 public List<LocationStats> getAllStats() {
+		return allStats;
+	}
+	public void setAllStats(List<LocationStats> allStats) {
+		this.allStats = allStats;
+	}
+	private final OkHttpClient httpClient = new OkHttpClient();
 	 
 	 private List<LocationStats> allStats=new ArrayList<>();
 	@PostConstruct
@@ -48,12 +55,29 @@ public class CoronaVirusDataService {
         Iterable<CSVRecord> records = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(csvBodyReader);
         for (CSVRecord record : records)
         {
-        	LocationStats locationStats=new LocationStats();
-        	locationStats.setState(record.get("Province/State"));
-        	locationStats.setCountry(record.get("Country/Region"));
-        	locationStats.setLatestTotalCases(Integer.parseInt(record.get(record.size()-1)));
-        	System.out.println(locationStats);
-        	newStats.add(locationStats);
+        	try {
+        		LocationStats locationStats=new LocationStats();
+            	locationStats.setState(record.get("Province_State"));
+            	locationStats.setCountry(record.get("Country_Region"));
+            	locationStats.setConfirmedcases(Integer.parseInt(record.get("Confirmed")));
+            	locationStats.setDeathsReported(Integer.parseInt(record.get("Deaths")));
+            	String latestCases=(record.get(record.size()-2));
+            	System.out.println(latestCases);
+				/*
+				 * int latestCases=Integer.parseInt(record.get(record.size()-1)); int
+				 * prevDayCases=Integer.parseInt(record.get(record.size()-2));
+				 * locationStats.setLatestTotalCases(latestCases);
+				 * locationStats.setDiffFromPrevDay(latestCases-prevDayCases);
+				 */ 
+            	
+              	System.out.println(locationStats);
+            	newStats.add(locationStats);
+        	}
+        	catch(Exception e)
+        	{
+        		e.printStackTrace();
+        	}
+        	
         }
         this.allStats=newStats;
 	}
